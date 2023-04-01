@@ -28,7 +28,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        list($offers, $colors, $sizes, $form) = $this->service->filter();
+        list($offers, $colors, $sizes, $form) = $this->service->getList();
         
         return $this->render('index', [
             'offers' => $offers,
