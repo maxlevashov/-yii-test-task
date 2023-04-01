@@ -9,7 +9,7 @@ use app\models\OffersFilterForm;
 class OffersService
 {
     
-    public function filter()
+    public function getList()
     {
         $form = new OffersFilterForm();
         $where = [];
@@ -30,8 +30,9 @@ class OffersService
             }
         } 
         
-        $offers = Offers::find()->where($where)->all();
-        $offersAll = Offers::find()->all();
+        $offersAll = Offers::find();
+        $offers = $offersAll->where($where)->all();
+        $offersAll = $offersAll->all();
         $colors = [];
         $sizes = [];
         
