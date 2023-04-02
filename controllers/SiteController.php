@@ -31,13 +31,11 @@ class SiteController extends Controller
     public function actionIndex()
     {
         $form = new OffersFilterForm();
-        $request = Yii::$app->request;
         $selectedFilters = [];
         $where = [];
-        
-        if ($request->isPost) {
-            $requesdData = Yii::$app->request->post('OffersFilterForm');
-            $this->service->loadRequest($requesdData, $form, $where, $selectedFilters);
+
+        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+            $this->service->loadRequest($form, $where, $selectedFilters);
         }
         
         list($offersAll, $offersFiltered) = $this->service->getOffers($where);
