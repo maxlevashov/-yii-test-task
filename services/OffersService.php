@@ -2,55 +2,86 @@
 
 namespace app\services;
 
-use Yii;
 use app\models\Offers;
-use app\models\OffersFilterForm;
 
+/** 
+ *  class OffersService
+ */
 class OffersService
 {
     
-    public function getList()
+    /** 
+     * Метод метод загружает данные http запроса
+     * 
+     * @param $requestData
+     * @param &$form
+     * @param &$where
+     * @param &$selectedFilters
+     * @return void
+     */
+    public function loadRequest($requestData, &$form, &$where, &$selectedFilters): void
     {
-        $form = new OffersFilterForm();
-        $where = [];
-        $request = Yii::$app->request;
-        $isColorFilterSelected = false;
-        $isSizeFilterSelected = false;
-        if ($request->isPost) {
-            $offersFilterForm = Yii::$app->request->post('OffersFilterForm');
-            if (!empty($offersFilterForm['color_id'])) {
-                $isColorFilterSelected = true;
-                $where['color_id'] = $offersFilterForm['color_id'];
-                $form->color_id = $offersFilterForm['color_id'];
+        foreach ($requestData as $filterName => $filterValue) {
+            if (!empty($requestData[$filterName])) {
+                $selectedFilters[$filterName] = true;
+                $where[$filterName] = $filterValue;
+
+                if ($filterName == 'color_id') {
+                    $form->color_id = $filterValue;
+                } elseif ($filterName == 'size_id') {
+                    $form->size_id = $filterValue;
+                } 
             }
-            if (!empty($offersFilterForm['size_id'])) {
-                $isSizeFilterSelected = true;
-                $where['size_id'] = $offersFilterForm['size_id'];
-                $form->size_id = $offersFilterForm['size_id'];
-            }
-        } 
+        }
+    }
+    
+    /** 
+     * Метод получает данные коммерческих предложений
+     * 
+     * @param array $where
+     * @return array
+     */
+    public function getOffers(array $where): array
+    {
+        $offers = Offers::find();
+        $offersAll = $offers->all();
+        $offersFiltered = $offers->where($where)->all();
         
-        $offersAll = Offers::find();
-        $offers = $offersAll->where($where)->all();
-        $offersAll = $offersAll->all();
+        return [$offersAll, $offersFiltered];
+    }
+    
+    /** 
+     * Метод получает данные для фильтров
+     * 
+     * @param $offersAll
+     * @param $offersFiltered
+     * @param $selectedFilters
+     * @return array
+     */
+    public function getFilters($offersAll, $offersFiltered, $selectedFilters): array
+    {
         $colors = [];
         $sizes = [];
-        
-        foreach ($offers as $offer) {
-            $colors[$offer->color->id] = $offer->color->name;
-            $sizes[$offer->size->id] = $offer->size->name;
-        }
-        
+       
         foreach ($offersAll as $offer) {
-            $colorsAll[$offer->color->id] = $offer->color->name;
-            $sizesAll[$offer->size->id] = $offer->size->name;
+            if (!isset($selectedFilters['size_id'])) {
+                $colors[$offer->color->id] = $offer->color->name;
+            }
+            if (!isset($selectedFilters['color_id'])) {
+                $sizes[$offer->size->id] = $offer->size->name;
+            }
         }
-        $colors = $isSizeFilterSelected ? $colors : $colorsAll;
-        $sizes = $isColorFilterSelected  ? $sizes : $sizesAll;
         
-        return [
-            $offers, $colors, $sizes, $form,
-        ];
+        foreach ($offersFiltered as $offer) {
+            if (isset($selectedFilters['size_id'])) {
+                $colors[$offer->color->id] = $offer->color->name;
+            }
+            if (isset($selectedFilters['color_id'])) {
+                $sizes[$offer->size->id] = $offer->size->name;
+            }
+        }
+        
+        return [$colors, $sizes];
     }
+    
 }
-
