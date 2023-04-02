@@ -13,24 +13,17 @@ class OffersService
     /** 
      * Метод метод загружает данные http запроса
      * 
-     * @param $requestData
-     * @param &$form
+     * @param $form
      * @param &$where
      * @param &$selectedFilters
      * @return void
      */
-    public function loadRequest($requestData, &$form, &$where, &$selectedFilters): void
+    public function loadRequest($form, &$where, &$selectedFilters): void
     {
-        foreach ($requestData as $filterName => $filterValue) {
-            if (!empty($requestData[$filterName])) {
+        foreach ($form as $filterName => $filterValue) {
+            if (!empty($filterValue)) {
                 $selectedFilters[$filterName] = true;
                 $where[$filterName] = $filterValue;
-
-                if ($filterName == 'color_id') {
-                    $form->color_id = $filterValue;
-                } elseif ($filterName == 'size_id') {
-                    $form->size_id = $filterValue;
-                } 
             }
         }
     }

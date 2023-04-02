@@ -16,5 +16,12 @@ class OffersFilterForm extends Model
             'size_id' => 'Размер',
         ];
     }
+    
+    public function rules()
+    {
+        return [
+            [['color_id', 'size_id'], 'integer'],
+        ];
+    }
 }
 
